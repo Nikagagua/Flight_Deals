@@ -1,11 +1,11 @@
-import requests
-from flight_data import FlightData
 import os
 from dotenv import load_dotenv
+import requests
+from flight_data import FlightData
 
 load_dotenv('.env')
 
-TEQUILA_ENDPOINT = "https://tequila-api.kiwi.com"
+TEQUILA_ENDPOINT = os.getenv('TEQUILA_ENDPOINT')
 TEQUILA_API_KEY = os.getenv('TEQUILA_KIWI_API_KEY')
 
 
@@ -34,7 +34,7 @@ class FlightSearch:
             "flight_type": "round",
             "one_for_city": 1,
             "max_stopovers": 0,
-            "curr": "GBP"
+            "curr": "USD"
         }
 
         response = requests.get(
@@ -46,9 +46,10 @@ class FlightSearch:
         try:
             data = response.json()["data"][0]
         except IndexError:
-            print(f"No flights found for {destination_city_code}.")
+            # No data was returned
             return None
 
+        # Process the flight data
         flight_data = FlightData(
             price=data["price"],
             origin_city=data["route"][0]["cityFrom"],
@@ -58,5 +59,5 @@ class FlightSearch:
             out_date=data["route"][0]["local_departure"].split("T")[0],
             return_date=data["route"][1]["local_departure"].split("T")[0]
         )
-        print(f"{flight_data.destination_city}: £{flight_data.price}")
+
         return flight_data

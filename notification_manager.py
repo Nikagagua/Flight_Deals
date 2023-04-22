@@ -1,13 +1,17 @@
-from twilio.rest import Client
 import os
+import smtplib
+from twilio.rest import Client
 from dotenv import load_dotenv
 
 load_dotenv('.env')
 
-TWILIO_SID = os.getenv('TWILIO_SID')
+TWILIO_SID = os.getenv("TWILIO_SID")
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_VIRTUAL_NUMBER = os.getenv('TWILIO_NUMBER')
 TWILIO_VERIFIED_NUMBER = os.getenv('MY_NUMBER')
+MAIL_PROVIDER_SMTP_ADDRESS = "smtp.gmail.com"
+MY_EMAIL = os.getenv("MY_EMAIL")
+MY_PASSWORD = os.getenv("MY_PASSWORD")
 
 
 class NotificationManager:
@@ -22,3 +26,15 @@ class NotificationManager:
             to=TWILIO_VERIFIED_NUMBER,
         )
         print(message.sid)
+
+    @staticmethod
+    def send_emails(emails, message):
+        with smtplib.SMTP(MAIL_PROVIDER_SMTP_ADDRESS) as connection:
+            connection.starttls()
+            connection.login(MY_EMAIL, MY_PASSWORD)
+            for email in emails:
+                connection.sendmail(
+                    from_addr=MY_EMAIL,
+                    to_addrs=email,
+                    msg=f"Subject:New Low Price Flight!\n\n{message}".encode('utf-8')
+                )
